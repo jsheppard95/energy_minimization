@@ -159,7 +159,6 @@ Output:
     _, PosMin_i_1 = LineSearch(Pos, forces_i_1, dx, EFracTolLS)
     # initialize the stopping condition (dE/E) to something large
     EFracCG = 10
-    nIter = 0
     while EFracCG > EFracTolCG:
         # Get energy forces at the current (last) position
         energy_i_1, forces_i = ex2lib.calcenergyforces(PosMin_i_1)
@@ -172,9 +171,6 @@ Output:
         EFracCG = np.abs(energy_i_1 - PEMin_i)/np.abs(PEMin_i)
         PosMin_i_1 = PosMin_i
         dir_i_1 = dir_i
-        if nIter % 100 == 0:
-            print("Iteration:", nIter, "Current Energy:", PEMin_i)
-        nIter += 1
 
     # compute final PE and return
     PE = ex2lib.calcenergy(PosMin_i)
@@ -221,9 +217,9 @@ if __name__ == "__main__":
 
     # Looping ConjugateGradient of different N's
     Nmin = 2  # minimum number of particles
-    Nmax = 25  # maximum number of particles
+    Nmax = 3  # maximum number of particles
     N_vals = np.arange(Nmin, Nmax + 1)
-    K = 100  # number of minimizations for each N
+    K = 4  # number of minimizations for each N
     # Energy Stopping conditions
     E_FRAC_TOL_LS = 1e-8
     E_FRAC_TOL_CG = 1e-10
@@ -238,10 +234,24 @@ if __name__ == "__main__":
             # Initialize particle coordinates
             InitPos = InitPositions(N_vals[i], BoxL)
             # Get minimium energy using conjugate gradient
-            PEMins[i, j] = ConjugateGradient(InitPos, DX, E_FRAC_TOL_LS,
-                                            E_FRAC_TOL_CG)[1]
-    # Display results: min, average, and max of K trials for each N
-    for i in range(len(N_vals)):
-        pass
-
+            PE = ConjugateGradient(InitPos, DX, E_FRAC_TOL_LS,
+                                   E_FRAC_TOL_CG)[0]
+            print("N:", N_vals[i], "K:", j)
+            print("PE:", PE)
+            PEMins[i, j] = PE
+            
+    # Display results and write to file: min, average, and max of K trials for
+    # each N
+    min_PEs = PEMins.min(axis=1)
+    mean_PEs = PEMins.mean(axis=1)
+    max_PEs = PEMins.max(axis=1)
+    outfile_name = f"K{K}_energy_min.txt"
+    with open(outfile_name, "w") as f:
+        for i in range(len(N_vals)):
+            output_str = (f"N: {N_vals[i]}, "
+                          f"Minimum P.E: {min_PEs[i]}, "
+                          f"Average P.E: {mean_PEs[i]}, "
+                          f"Maximum P.E: {max_PEs[i]}")
+            print(output_str)
+            f.write(output_str + "\n")
     plt.show()
