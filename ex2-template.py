@@ -77,7 +77,8 @@ Output:
     while True:
         Iter += 1
         if Iter > MaxIter:
-            print("Warning: maximum number of iterations reached in line search.")
+            print("Warning: maximum number of iterations reached in line "
+                  "search.")
             break
             
         #unpack distances for ease of code-reading
@@ -152,23 +153,33 @@ Output:
     PEnergy: value of potential energy at minimum
     Pos: minimum energy (N,3) position array 
 """
-    #### YOUR CODE HERE ####
-    ## In my code, I can accomplish this function in 12 lines ###
+    # Perform initial search in direction of forces
+    forces_i_1 = ex2lib.calcforces(Pos)
+    dir_i_1 = np.copy(forces_i_1)
+    _, PosMin_i_1 = LineSearch(Pos, forces_i_1, dx, EFracTolLS)
     # initialize the stopping condition (dE/E) to something large
     EFracCG = 10
+    nIter = 0
     while EFracCG > EFracTolCG:
-        # Get initial energy and forces=search_direction
-        energy_i_1, forces_i_1 = ex2lib.calcenergyforces(Pos)
-        # Find PEMin and next pos searching in this force direction
-        PEMin_i, PosMin_i = LineSearch(Pos, forces_i_1, dx, EFracTolLS)
+        # Get energy forces at the current (last) position
+        energy_i_1, forces_i = ex2lib.calcenergyforces(PosMin_i_1)
         # Set the next search direction
         # d_i = f_i + gamma_i*d_{i-1}
-        energy_i, forces_i = ex2lib.calcenergyforces(PosMin_i)
+        gamma_i = np.dot(forces_i.flatten(), forces_i.flatten()) / \
+            np.dot(forces_i_1.flatten(), forces_i_1.flatten())
+        dir_i = forces_i + gamma_i*dir_i_1
+        PEMin_i, PosMin_i = LineSearch(PosMin_i_1, forces_i, dx, EFracTolLS)
+        EFracCG = np.abs(energy_i_1 - PEMin_i)/np.abs(PEMin_i)
+        PosMin_i_1 = PosMin_i
+        dir_i_1 = dir_i
+        if nIter % 100 == 0:
+            print("Iteration:", nIter, "Current Energy:", PEMin_i)
+        nIter += 1
 
-    # compute forces from current set of coordinates
-    forces = ex2lib.calcforces(Pos)
-    print(forces)
-    
+    # compute final PE and return
+    PE = ex2lib.calcenergy(PosMin_i)
+    Pos = PosMin_i
+
     return PE, Pos
 
 
@@ -185,19 +196,52 @@ Output:
     return Pos
 
 
+if __name__ == "__main__":
+    # ConjugateGradient Smell Test
+    InitPos = InitPositions(25, 3)
+    # Plot initial position
+    fig1 = plt.figure()
+    ax1 = fig1.add_subplot(111, projection='3d')
+    ax1.scatter(InitPos[:, 0], InitPos[:, 1], InitPos[:, 2])
+    ax1.set_xlabel("x")
+    ax1.set_ylabel("y")
+    ax1.set_zlabel("z")
+    ax1.set_title("Initial Configuration")
 
+    PEMin, PosMin = ConjugateGradient(InitPos, 0.1, 1e-8, 1e-8)
 
-#### YOUR CODE HERE ####
-InitPos = InitPositions(25, 3)
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-ax.scatter(InitPos[:, 0], InitPos[:, 1], InitPos[:, 2])
-#ConjugateGradient(InitPos, 0.1, 0.1, 0.1)
+    # Plot Minimized position
+    fig2 = plt.figure()
+    ax2 = fig2.add_subplot(111, projection='3d')
+    ax2.scatter(PosMin[:, 0], PosMin[:, 1], PosMin[:, 2])
+    ax2.set_xlabel("x")
+    ax2.set_ylabel("y")
+    ax2.set_zlabel("z")
+    ax2.set_title("Energy Minimized Configuration")
 
-EnergyForces = ex2lib.calcenergyforces(InitPos)
-energy = ex2lib.calcenergy(InitPos)
-forces = ex2lib.calcforces(InitPos)
-print(EnergyForces)
-print(energy)
-print(forces)
-plt.show()
+    # Looping ConjugateGradient of different N's
+    Nmin = 2  # minimum number of particles
+    Nmax = 25  # maximum number of particles
+    N_vals = np.arange(Nmin, Nmax + 1)
+    K = 100  # number of minimizations for each N
+    # Energy Stopping conditions
+    E_FRAC_TOL_LS = 1e-8
+    E_FRAC_TOL_CG = 1e-10
+    DX = 0.001  # LineSearch step size
+    DENSITY = 0.001
+    PEMins = np.zeros((len(N_vals), K))
+    for i in range(len(N_vals)):
+        # Find L s.t N/V = DENSITY
+        BoxL = (N_vals[i]/DENSITY)**(1/3)
+        # Perform K minimizations, each starting from different initial coords
+        for j in range(K):
+            # Initialize particle coordinates
+            InitPos = InitPositions(N_vals[i], BoxL)
+            # Get minimium energy using conjugate gradient
+            PEMins[i, j] = ConjugateGradient(InitPos, DX, E_FRAC_TOL_LS,
+                                            E_FRAC_TOL_CG)[1]
+    # Display results: min, average, and max of K trials for each N
+    for i in range(len(N_vals)):
+        pass
+
+    plt.show()
