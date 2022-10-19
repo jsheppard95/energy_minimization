@@ -2,6 +2,7 @@
 
 
 #import python modules
+import matplotlib.pyplot as plt
 import numpy as np
 
 #import compiled fortran library for this exercise
@@ -153,6 +154,21 @@ Output:
 """
     #### YOUR CODE HERE ####
     ## In my code, I can accomplish this function in 12 lines ###
+    # initialize the stopping condition (dE/E) to something large
+    EFracCG = 10
+    while EFracCG > EFracTolCG:
+        # Get initial energy and forces=search_direction
+        energy_i_1, forces_i_1 = ex2lib.calcenergyforces(Pos)
+        # Find PEMin and next pos searching in this force direction
+        PEMin_i, PosMin_i = LineSearch(Pos, forces_i_1, dx, EFracTolLS)
+        # Set the next search direction
+        # d_i = f_i + gamma_i*d_{i-1}
+        energy_i, forces_i = ex2lib.calcenergyforces(PosMin_i)
+
+    # compute forces from current set of coordinates
+    forces = ex2lib.calcforces(Pos)
+    print(forces)
+    
     return PE, Pos
 
 
@@ -164,14 +180,24 @@ Input:
     L: box width
 Output:
     Pos: (N,3) array of positions
-"""
-    #### YOUR CODE HERE ####
-    ## In my code, I can accomplish this function in 1 line ###
+""" 
+    Pos = np.random.uniform(high=L, size=(N, 3))
     return Pos
 
 
 
 
 #### YOUR CODE HERE ####
+InitPos = InitPositions(25, 3)
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.scatter(InitPos[:, 0], InitPos[:, 1], InitPos[:, 2])
+#ConjugateGradient(InitPos, 0.1, 0.1, 0.1)
 
-
+EnergyForces = ex2lib.calcenergyforces(InitPos)
+energy = ex2lib.calcenergy(InitPos)
+forces = ex2lib.calcforces(InitPos)
+print(EnergyForces)
+print(energy)
+print(forces)
+plt.show()

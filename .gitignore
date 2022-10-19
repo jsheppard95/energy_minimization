@@ -1,0 +1,5 @@
+# vim stuff
+*.un~
+
+# Compiled files
+ex2lib.cpython-39-x86_64-linux-gnu.so
