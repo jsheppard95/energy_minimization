@@ -195,7 +195,7 @@ Output:
 def KConjugateGradient(K):
     # Looping ConjugateGradient of different N's
     Nmin = 2  # minimum number of particles
-    Nmax = 3  # maximum number of particles
+    Nmax = 26  # maximum number of particles
     N_vals = np.arange(Nmin, Nmax + 1)
     # Energy Stopping conditions
     E_FRAC_TOL_LS = 1e-8
@@ -204,6 +204,7 @@ def KConjugateGradient(K):
     DENSITY = 0.001
     PEMins = np.zeros((len(N_vals), K))
     for i in range(len(N_vals)):
+        print("N:", N_vals[i])
         # Find L s.t N/V = DENSITY
         BoxL = (N_vals[i]/DENSITY)**(1/3)
         # Perform K minimizations, each starting from different initial coords
@@ -213,7 +214,6 @@ def KConjugateGradient(K):
             # Get minimium energy using conjugate gradient
             PE = ConjugateGradient(InitPos, DX, E_FRAC_TOL_LS,
                                    E_FRAC_TOL_CG)[0]
-            print("N:", N_vals[i], "K:", j, "PE:", PE)
             PEMins[i, j] = PE
             
     # Display results and write to file: min, average, and max of K trials for
@@ -233,6 +233,7 @@ def KConjugateGradient(K):
 
 
 if __name__ == "__main__":
-    K_vals = [4, 5]
+    K_vals = [100, 1000, 10000]
     for K in K_vals:
+        print("K:", K)
         KConjugateGradient(K)
