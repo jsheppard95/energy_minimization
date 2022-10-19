@@ -192,34 +192,11 @@ Output:
     return Pos
 
 
-if __name__ == "__main__":
-    # ConjugateGradient Smell Test
-    InitPos = InitPositions(25, 3)
-    # Plot initial position
-    fig1 = plt.figure()
-    ax1 = fig1.add_subplot(111, projection='3d')
-    ax1.scatter(InitPos[:, 0], InitPos[:, 1], InitPos[:, 2])
-    ax1.set_xlabel("x")
-    ax1.set_ylabel("y")
-    ax1.set_zlabel("z")
-    ax1.set_title("Initial Configuration")
-
-    PEMin, PosMin = ConjugateGradient(InitPos, 0.1, 1e-8, 1e-8)
-
-    # Plot Minimized position
-    fig2 = plt.figure()
-    ax2 = fig2.add_subplot(111, projection='3d')
-    ax2.scatter(PosMin[:, 0], PosMin[:, 1], PosMin[:, 2])
-    ax2.set_xlabel("x")
-    ax2.set_ylabel("y")
-    ax2.set_zlabel("z")
-    ax2.set_title("Energy Minimized Configuration")
-
+def KConjugateGradient(K):
     # Looping ConjugateGradient of different N's
     Nmin = 2  # minimum number of particles
     Nmax = 3  # maximum number of particles
     N_vals = np.arange(Nmin, Nmax + 1)
-    K = 4  # number of minimizations for each N
     # Energy Stopping conditions
     E_FRAC_TOL_LS = 1e-8
     E_FRAC_TOL_CG = 1e-10
@@ -236,8 +213,7 @@ if __name__ == "__main__":
             # Get minimium energy using conjugate gradient
             PE = ConjugateGradient(InitPos, DX, E_FRAC_TOL_LS,
                                    E_FRAC_TOL_CG)[0]
-            print("N:", N_vals[i], "K:", j)
-            print("PE:", PE)
+            print("N:", N_vals[i], "K:", j, "PE:", PE)
             PEMins[i, j] = PE
             
     # Display results and write to file: min, average, and max of K trials for
@@ -254,4 +230,9 @@ if __name__ == "__main__":
                           f"Maximum P.E: {max_PEs[i]}")
             print(output_str)
             f.write(output_str + "\n")
-    plt.show()
+
+
+if __name__ == "__main__":
+    K_vals = [4, 5]
+    for K in K_vals:
+        KConjugateGradient(K)
