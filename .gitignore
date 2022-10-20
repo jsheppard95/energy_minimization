@@ -1,8 +1,9 @@
 # vim stuff
 *.un~
 
-# Output Files
-*energy_min.txt
+# Test output files
+K4_energy_min.txt
+K5_energy_min.txt
 
 # Compiled files
 ex2lib.cpython-39-x86_64-linux-gnu.so
