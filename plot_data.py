@@ -1,6 +1,6 @@
 #import python modules
 import matplotlib.pyplot as plt
-import numpy as np
+import pandas as pd
 
 #NOTE:
 #Everything below assumes unit atomic masses,
@@ -53,6 +53,7 @@ def ReadKEnergyMin(file):
 if __name__ == "__main__":
     # Read K = 100 energy minimization results file
     K100_file = "K100_energy_min.txt"
+    leary_file = "LearyData.csv"
     result = ReadKEnergyMin(K100_file)
 
     # Plot minimum and average energies vs. N, for each value of K
@@ -62,6 +63,11 @@ if __name__ == "__main__":
     ax2 = ax.twinx()
     avg_PE = ax2.plot(result["N"], result["AverageP.E"], "x", color="blue",
                       label="Average")
+
+    # Read and plot the expected data from Leary
+    min_PE_exp = pd.read_csv(leary_file)
+    #exp_PE = ax.plot(leary_file[])
+
     plots = min_PE + avg_PE
     labs = [p.get_label() for p in plots]
     ax.grid()
