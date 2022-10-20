@@ -164,10 +164,9 @@ Output:
         energy_i_1, forces_i = ex2lib.calcenergyforces(PosMin_i_1)
         # Set the next search direction
         # d_i = f_i + gamma_i*d_{i-1}
-        gamma_i = np.dot(forces_i.flatten(), forces_i.flatten()) / \
-            np.dot(forces_i_1.flatten(), forces_i_1.flatten())
+        gamma_i = np.sum(forces_i * forces_i) / np.sum(forces_i_1 * forces_i_1)
         dir_i = forces_i + gamma_i*dir_i_1
-        PEMin_i, PosMin_i = LineSearch(PosMin_i_1, forces_i, dx, EFracTolLS)
+        PEMin_i, PosMin_i = LineSearch(PosMin_i_1, dir_i, dx, EFracTolLS)
         EFracCG = np.abs(energy_i_1 - PEMin_i)/np.abs(PEMin_i)
         PosMin_i_1 = PosMin_i
         dir_i_1 = dir_i
@@ -209,6 +208,8 @@ def KConjugateGradient(K):
         BoxL = (N_vals[i]/DENSITY)**(1/3)
         # Perform K minimizations, each starting from different initial coords
         for j in range(K):
+            if j % 10 == 0:
+                print("K_iter:", j)
             # Initialize particle coordinates
             InitPos = InitPositions(N_vals[i], BoxL)
             # Get minimium energy using conjugate gradient
