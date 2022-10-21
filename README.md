@@ -39,21 +39,51 @@ Compile Fortran code `ex2lib.f90` as a Python module as follows:
 ```
 $ f2py -c -m ex2lib ex2lib.f90
 ```
-This generates a ["Shared Object" library file](https://superuser.com/questions/71404/what-is-an-so-file)
-`ex2lib.cpython-39-x86_64-linux-gnu.so`. One can then `import` the functions defined in `ex2lib.f90`
-as Python functions, noting that casing is lowered when used in Python. For example, the fortran
-function `CalcForces` is available in Python as
+
+This generates the
+["Shared Object" library file](https://superuser.com/questions/71404/what-is-an-so-file)
+`ex2lib.cpython-39-x86_64-linux-gnu.so`. One can then `import` the functions
+defined in `ex2lib.f90` as Python functions, noting that casing is lowered
+when used in Python. For example, the Fortran function `CalcForces` is
+available in Python as
+
 ```
 import ex2lib
 ex2lib.CalcForces(*args)
 ```
+
 making the force and energy calculations far more efficient than if
 implemented directly in Python due to the fact that Fortran is a compiled language.
 
-Generate energy minimization data as shown below. Note this process can take
-on the order of days. `K`-specific files (see below) are however written
-sequentially, allowing for analysis in parallel.
+Generate energy minimization data with the following minimization script. Note
+this process can take on the order of days. `K`-specific files (see below) are
+however written sequentially, allowing for analysis in parallel.
 
 ```
 $ python exercise2.py
 ```
+
+This will write three files to the output directory `data`:
+
+```
+K100_energy_min.txt
+K1000_energy_min.txt
+K10000_energy_min.txt
+```
+
+Each of the following format:
+
+```
+N: {}, Minimum P.E: {}, Average P.E: {}, Maximum P.E: {}
+```
+
+where `N` ranges fropm `2` to `26` inclusive, and the minimum, average, and maximum
+are over the `K` conjugate gradient searches for that `N`.
+
+Generate plots and global energy minimum model with the following analysis
+script:
+
+```
+$ python analysis.py
+```
+
