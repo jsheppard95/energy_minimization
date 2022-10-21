@@ -91,6 +91,23 @@ $ python analysis.py
 
 This script reads the minimization data contained in `data` (along with the
 minimizations obtained by Leary and defined in `data/LearyData.csv`), and
-plots the results, writing figures toi the output directory `plots`.
+plots the results, writing figures to the output directory `plots`.
 
 ## Results
+At this point, the `K=1000` and `K=10000` results are yet to complete, but the code in
+this repository has been functionalized to make the additional analysis of these
+results simple to implement, requiring only additional function calls pointing to
+new input files (see below).
+
+### K = 100 Results
+Considering `K = 100`, we find reasonable agreement between the minimum conjugate
+gradient result over `K` iterations and Leary's minimum potential energies,
+but our average is much larger. This highlights the need for a stochastic element of
+these minimization routines to obtain an adequate search over the Potential Energy
+Surface, since some initial random configurations are likely to be caught in
+local minima.
+
+![K100_energy_min](plots/K100_energy_min.png)
+
+We note a global energy minimum here for `N = 26` particles, obtaining a
+dimensionless potential energy of `-101.3`.
