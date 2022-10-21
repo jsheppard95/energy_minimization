@@ -111,3 +111,30 @@ local minima.
 
 We note a global energy minimum here for `N = 26` particles, obtaining a
 dimensionless potential energy of `-101.3`.
+
+Next, we fit a model formulated from macroscopic scaling arguments to the
+minimum potential energies found from our conjugate gradient search using the
+least squares minimization fitting routing `scipy.optimize.curve_fit`. This
+results in the best parameters and curve below:
+
+![K100_energy_min_UmacroFit](plots/K100_energy_min_UmacroFit.png)
+
+We then consider the different between the true minimum obtained by conjugate
+gradient search and model-predicted minimum, `U_min - U_macro`, and look for
+dips in the resulting curve, indicating a larger predicted minimum. This would
+indicate a stable packing configuration and thus a lower minima than would be
+obtained by simple scaling laws. This result is shown below:
+
+![K100_energy_min_UmacroResid](plots/K100_energy_min_UmacroResid.png)
+
+From these difference, we note that only `N=20` appears significantly stable,
+while `N=13` and `N=19` are expected. This along with the our significantly
+higher average potential energies than minimum potential energies over our
+conjugate gradient searches indicates we are unlikely to have found the global
+minima using `100` random starts. This highlights the necessity for increased
+search iterations (i.e using `K = 1000`, `K = 10000`) to adequately sample
+initial positions on the Potential Energy Surface and increase the chance of
+finding a global energy minima as opposed to a local energy minima.
+
+## Future Work
+
