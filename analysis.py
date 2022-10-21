@@ -1,7 +1,10 @@
 #import python modules
 import matplotlib.pyplot as plt
+from matplotlib.offsetbox import AnchoredText
+import numpy as np
 import os
 import pandas as pd
+from scipy.optimize import curve_fit
 
 def ReadKEnergyMin(file):
     """
@@ -100,7 +103,7 @@ def UMacro(N, a, b, c):
     """
     return a + b*N**(2/3) + c*N
 
-def FitUMacro():
+def FitUMacro(K_energy_min_file, K):
     pass
 
 
@@ -108,6 +111,53 @@ if __name__ == "__main__":
     # Set file paths
     K100_fname = "K100_energy_min.txt"
     K100_file = os.path.join("data", K100_fname)
+    # Plot K100 results
     PlotResults(K100_file, 100)
 
+    # Fit Umacro
+    K100_data = ReadKEnergyMin(K100_file)
+    popt, pcov = curve_fit(UMacro, K100_data["N"], K100_data["MinimumP.E"])
+
+    # Plot result (fit and actual N)
+    N_vals = np.linspace(2, 26, 1000)
+    U_pred = UMacro(N_vals, *popt)
+    f1, ax1 = plt.subplots()
+    act = ax1.plot(K100_data["N"], K100_data["MinimumP.E"], ".",
+                  label=r"Actual, $U^*_{min}$")
+    pred = ax1.plot(N_vals, U_pred, label=r"Predicted $U_{macro}$")
+
+    # Plot customization
+    def style_plot(ax, K, param_str):
+        """
+        Helper function to do common styling
+        """
+        ax.grid()
+        ax.set_xlabel(r"Number of Particles, $N$")
+        ax.set_title(f"K = {K}\n"
+                     r"$U_{macro} = a + bN^{2/3} + cN$")
+        anchored_text = AnchoredText(param_str, loc="lower left")
+        ax.add_artist(anchored_text)
+
+    plots = act + pred
+    labs = [p.get_label() for p in plots]
+    param_str = f"a = {popt[0]:.2f}, b={popt[1]:.2f}, c={popt[2]:.2f}"
+    ax1.legend(plots, labs, loc=0)
+    ax1.set_ylabel(r"Minimum Potential Energy (dimensionless), $U^*_{min}$")
+    style_plot(ax1, 100, param_str)
+
+    # Plot difference U_min - U_macro
+    N_disc = np.arange(2, 27)
+    U_pred_disc = UMacro(N_disc, *popt)
+    resid = K100_data["MinimumP.E"] - U_pred_disc
+    f2, ax2 = plt.subplots()
+    ax2.plot(N_disc, resid, ".")
+    ax2.set_ylabel(r"Residuals, $U^*_{min} - U_{macro}$")
+    style_plot(ax2, 100, param_str)
+
+    # Save plots
+    output_dir = "plots"
+    fit_outfile_name = os.path.basename(K100_file).replace(".txt", "_UmacroFit.png")
+    f1.savefig(os.path.join(output_dir, fit_outfile_name))
+    resid_outfile_name = os.path.basename(K100_file).replace(".txt", "_UmacroResid.png")
+    f2.savefig(os.path.join(output_dir, resid_outfile_name))
     plt.show()
