@@ -4,6 +4,7 @@
 #import python modules
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 #import compiled fortran library for this exercise
 import ex2lib
@@ -222,7 +223,8 @@ def KConjugateGradient(K):
     min_PEs = PEMins.min(axis=1)
     mean_PEs = PEMins.mean(axis=1)
     max_PEs = PEMins.max(axis=1)
-    outfile_name = f"K{K}_energy_min.txt"
+    fname = f"K{K}_energy_min.txt"
+    outfile_name = os.path.join("data", fname)
     with open(outfile_name, "w") as f:
         for i in range(len(N_vals)):
             output_str = (f"N: {N_vals[i]}, "

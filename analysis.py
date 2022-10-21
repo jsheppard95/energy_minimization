@@ -1,5 +1,6 @@
 #import python modules
 import matplotlib.pyplot as plt
+import os
 import pandas as pd
 
 #NOTE:
@@ -28,7 +29,6 @@ def ReadKEnergyMin(file):
     with open(file, "r") as f:
         while True:
             line = f.readline()
-            # print(line)
             if not line:
                 break
             entries = line.split(",")
@@ -42,7 +42,6 @@ def ReadKEnergyMin(file):
                     value = int(data[1])
                 else:
                     value = float(data[1])
-                # print(key)
                 if key not in result:
                     result[key] = [value]
                 else:
@@ -51,30 +50,37 @@ def ReadKEnergyMin(file):
 
 
 if __name__ == "__main__":
+    # Set file paths
+    K100_fname = "K100_energy_min.txt"
+    K100_file = os.path.join("data", K100_fname)
+    leary_fname = "LearyData.csv"
+    leary_file = os.path.join("data", leary_fname)
     # Read K = 100 energy minimization results file
-    K100_file = "K100_energy_min.txt"
-    leary_file = "LearyData.csv"
     result = ReadKEnergyMin(K100_file)
 
     # Plot minimum and average energies vs. N, for each value of K
     f, ax = plt.subplots()
-    min_PE = ax.plot(result["N"], result["MinimumP.E"], ".", color="red",
+    min_PE = ax.plot(result["N"], result["MinimumP.E"], ".", color="black",
                      label="Minimum")
     ax2 = ax.twinx()
     avg_PE = ax2.plot(result["N"], result["AverageP.E"], "x", color="blue",
                       label="Average")
 
     # Read and plot the expected data from Leary
-    min_PE_exp = pd.read_csv(leary_file)
-    #exp_PE = ax.plot(leary_file[])
+    leary_df = pd.read_csv(leary_file)
+    leary_PE = ax.plot(leary_df["N"], -leary_df["minusUmin"], "^", color="black",
+                     label="Leary Data")
 
-    plots = min_PE + avg_PE
+    # Multi-axis plot customization
+    plots = min_PE + leary_PE + avg_PE
     labs = [p.get_label() for p in plots]
     ax.grid()
     ax.legend(plots, labs, loc=0)
     ax.set_title("K = 100")
     ax.set_xlabel(r"Number of Particles, $N$")
-    ax.set_ylabel(r"Minimum Potential Energy (dimensionless), $U^*_{min}$")
+    ax.set_ylabel(r"Minimum/Leary Potential Energy (dimensionless), $U^*_{min}$")
     ax2.set_ylabel(r"Average Potential Energy (dimensionless), $U^*_{avg}$")
-    f.savefig("MinAvgPE_N_K100.png")
+    ax2.yaxis.label.set_color("blue")
+    output_dir = "plots"
+    f.savefig(os.path.join(output_dir, "MinAvgPE_N_K100.png"))
     plt.show()
