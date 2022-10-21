@@ -48,6 +48,14 @@ def ReadKEnergyMin(file):
     return result
 
 
+def add_legend(ax, plots):
+    """
+    Helper function add a legend
+    """
+    labs = [p.get_label() for p in plots]
+    ax.legend(plots, labs, loc=0)
+
+
 def PlotResults(K_energy_min_file, K):
     """
     Plots data
@@ -78,9 +86,8 @@ def PlotResults(K_energy_min_file, K):
 
     # Multi-axis plot customization
     plots = min_PE + leary_PE + avg_PE
-    labs = [p.get_label() for p in plots]
     ax.grid()
-    ax.legend(plots, labs, loc=0)
+    add_legend(ax, plots)
     ax.set_title(f"K = {K}")
     ax.set_xlabel(r"Number of Particles, $N$")
     ax.set_ylabel(r"Minimum/Leary Potential Energy (dimensionless), $U^*_{min}$")
@@ -111,6 +118,7 @@ def UMacro(N, a, b, c):
     """
     return a + b*N**(2/3) + c*N
 
+
 def style_plot(ax, K, param_str):
     """
     Helper function to do common styling for UMacro plots
@@ -122,8 +130,51 @@ def style_plot(ax, K, param_str):
     anchored_text = AnchoredText(param_str, loc="lower left")
     ax.add_artist(anchored_text)
 
+
 def FitUMacro(K_energy_min_file, K):
-    pass
+    """
+    Fits U_macro and plots the result
+
+    Parameters:
+    -----------
+    K_energy_min_file : str ; Path to energy minimization file
+    K : int ; Value of K used for this minimization file
+    """
+    result = ReadKEnergyMin(K_energy_min_file)
+    popt, pcov = curve_fit(UMacro, result["N"], result["MinimumP.E"])
+
+    # Plot result (fit and actual N)
+    N_MIN = 2
+    N_MAX = 26
+    N_vals = np.linspace(N_MIN, N_MAX, 1000)
+    U_pred = UMacro(N_vals, *popt)
+    f1, ax1 = plt.subplots()
+    act = ax1.plot(result["N"], result["MinimumP.E"], ".",
+                   label=r"Actual, $U^*_{min}$")
+    pred = ax1.plot(N_vals, U_pred, label=r"Predicted $U_{macro}$")
+
+    # Plot customization
+    plots = act + pred
+    add_legend(ax1, plots)
+    ax1.set_ylabel(r"Minimum Potential Energy (dimensionless), $U^*_{min}$")
+    param_str = f"a = {popt[0]:.2f}, b={popt[1]:.2f}, c={popt[2]:.2f}"
+    style_plot(ax1, K, param_str)
+
+    # Plot difference U_min - U_macro
+    N_disc = np.arange(N_MIN, N_MAX + 1)
+    U_pred_disc = UMacro(N_disc, *popt)
+    resid = result["MinimumP.E"] - U_pred_disc
+    f2, ax2 = plt.subplots()
+    ax2.plot(N_disc, resid, ".")
+    ax2.set_ylabel(r"Residuals, $U^*_{min} - U_{macro}$")
+    style_plot(ax2, K, param_str)
+
+    # Save plots
+    output_dir = "plots"
+    fit_outfile_name = os.path.basename(K_energy_min_file).replace(".txt", "_UmacroFit.png")
+    f1.savefig(os.path.join(output_dir, fit_outfile_name))
+    resid_outfile_name = os.path.basename(K_energy_min_file).replace(".txt", "_UmacroResid.png")
+    f2.savefig(os.path.join(output_dir, resid_outfile_name))
 
 
 if __name__ == "__main__":
@@ -132,40 +183,5 @@ if __name__ == "__main__":
     K100_file = os.path.join("data", K100_fname)
     # Plot K100 results
     PlotResults(K100_file, 100)
-
-    # Fit Umacro
-    K100_data = ReadKEnergyMin(K100_file)
-    popt, pcov = curve_fit(UMacro, K100_data["N"], K100_data["MinimumP.E"])
-
-    # Plot result (fit and actual N)
-    N_vals = np.linspace(2, 26, 1000)
-    U_pred = UMacro(N_vals, *popt)
-    f1, ax1 = plt.subplots()
-    act = ax1.plot(K100_data["N"], K100_data["MinimumP.E"], ".",
-                  label=r"Actual, $U^*_{min}$")
-    pred = ax1.plot(N_vals, U_pred, label=r"Predicted $U_{macro}$")
-
-    # Plot customization
-    plots = act + pred
-    labs = [p.get_label() for p in plots]
-    param_str = f"a = {popt[0]:.2f}, b={popt[1]:.2f}, c={popt[2]:.2f}"
-    ax1.legend(plots, labs, loc=0)
-    ax1.set_ylabel(r"Minimum Potential Energy (dimensionless), $U^*_{min}$")
-    style_plot(ax1, 100, param_str)
-
-    # Plot difference U_min - U_macro
-    N_disc = np.arange(2, 27)
-    U_pred_disc = UMacro(N_disc, *popt)
-    resid = K100_data["MinimumP.E"] - U_pred_disc
-    f2, ax2 = plt.subplots()
-    ax2.plot(N_disc, resid, ".")
-    ax2.set_ylabel(r"Residuals, $U^*_{min} - U_{macro}$")
-    style_plot(ax2, 100, param_str)
-
-    # Save plots
-    output_dir = "plots"
-    fit_outfile_name = os.path.basename(K100_file).replace(".txt", "_UmacroFit.png")
-    f1.savefig(os.path.join(output_dir, fit_outfile_name))
-    resid_outfile_name = os.path.basename(K100_file).replace(".txt", "_UmacroResid.png")
-    f2.savefig(os.path.join(output_dir, resid_outfile_name))
+    FitUMacro(K100_file, 100)
     plt.show()
