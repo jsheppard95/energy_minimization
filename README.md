@@ -1,5 +1,7 @@
-Jackson Sheppard
-CH E 210D, Exercise 2
+# energy_minimization
+
+Jackson Sheppard\
+CH E 210D, Exercise 2\
 10/20/22
 
 Here we present an implementation of Conjugate Gradient Descent to find
@@ -19,3 +21,39 @@ fitting the model using least-squares minimization. We then look for dips in
 the residual plot for this model, indicating a lower stable energy minima than
 expected from macroscopic scaling, thus indicating a stable packing
 configuration.
+
+## Installation and Usage
+Note the following instructions have been tested using Linux Ubuntu 20.04.5
+only. Compiling Fortran may bring additional challenges on other operating
+systems.
+
+Clone [this repository]() and navigate to its root. Install dependencies
+defined in the `environment.yml` file using `conda`:
+
+```
+$ conda env create --name envname --file=environment.yml
+```
+
+Compile Fortran code `ex2lib.f90` as a Python module as follows:
+
+```
+$ f2py -c -m ex2lib ex2lib.f90
+```
+This generates a ["Shared Object" library file](https://superuser.com/questions/71404/what-is-an-so-file)
+`ex2lib.cpython-39-x86_64-linux-gnu.so`. One can then `import` the functions defined in `ex2lib.f90`
+as Python functions, noting that casing is lowered when used in Python. For example, the fortran
+function `CalcForces` is available in Python as
+```
+import ex2lib
+ex2lib.CalcForces(*args)
+```
+making the force and energy calculations far more efficient than if
+implemented directly in Python due to the fact that Fortran is a compiled language.
+
+Generate energy minimization data as shown below. Note this process can take
+on the order of days. `K`-specific files (see below) are however written
+sequentially, allowing for analysis in parallel.
+
+```
+$ python exercise2.py
+```
