@@ -27,8 +27,9 @@ Note the following instructions have been tested using Linux Ubuntu 20.04.5
 only. Compiling Fortran may bring additional challenges on other operating
 systems.
 
-Clone [this repository]() and navigate to its root. Install dependencies
-defined in the `environment.yml` file using `conda`:
+Clone [this repository](https://github.com/jsheppard95/energy_minimization)
+and navigate to its root. Install dependencies defined in the
+`environment.yml` file using `conda`:
 
 ```
 $ conda env create --name envname --file=environment.yml
@@ -64,7 +65,7 @@ however written sequentially, allowing for analysis in parallel.
 $ python exercise2.py
 ```
 
-This will write three files to the output directory `/data`:
+This will write three files to the output directory `data/`:
 
 ```
 K100_energy_min.txt
