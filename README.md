@@ -42,18 +42,19 @@ $ f2py -c -m ex2lib ex2lib.f90
 
 This generates the
 ["Shared Object" library file](https://superuser.com/questions/71404/what-is-an-so-file)
-`ex2lib.cpython-39-x86_64-linux-gnu.so`. One can then `import` the functions
-defined in `ex2lib.f90` as Python functions, noting that casing is lowered
-when used in Python. For example, the Fortran function `CalcForces` is
-available in Python as
+`ex2lib.cpython-39-x86_64-linux-gnu.so`. With this file in the working
+directory, one can then `import` functions defined in `ex2lib.f90` as Python
+functions, noting that casing is lowered when used in Python. For example, the
+Fortran function `CalcForces` is available in Python as
 
 ```
 import ex2lib
-ex2lib.CalcForces(*args)
+ex2lib.calcforces(*args)
 ```
 
 making the force and energy calculations far more efficient than if
-implemented directly in Python due to the fact that Fortran is a compiled language.
+implemented directly in Python due to the fact that Fortran is a compiled
+language.
 
 Generate energy minimization data with the following minimization script. Note
 this process can take on the order of days. `K`-specific files (see below) are
@@ -63,7 +64,7 @@ however written sequentially, allowing for analysis in parallel.
 $ python exercise2.py
 ```
 
-This will write three files to the output directory `data`:
+This will write three files to the output directory `/data`:
 
 ```
 K100_energy_min.txt
@@ -87,3 +88,8 @@ script:
 $ python analysis.py
 ```
 
+This script reads the minimization data contained in `data` (along with the
+minimizations obtained by Leary and defined in `data/LearyData.csv`), and
+plots the results, writing figures toi the output directory `plots`.
+
+## Results
