@@ -49,6 +49,14 @@ def ReadKEnergyMin(file):
 
 
 def PlotResults(K_energy_min_file, K):
+    """
+    Plots data
+
+    Parameters:
+    -----------
+    K_energy_min_file : str ; Path to energy minimization file
+    K : int ; Value of K used for this minimization file
+    """
     # Read K energy minimization results file
     result = ReadKEnergyMin(K_energy_min_file)
 
@@ -103,6 +111,17 @@ def UMacro(N, a, b, c):
     """
     return a + b*N**(2/3) + c*N
 
+def style_plot(ax, K, param_str):
+    """
+    Helper function to do common styling for UMacro plots
+    """
+    ax.grid()
+    ax.set_xlabel(r"Number of Particles, $N$")
+    ax.set_title(f"K = {K}\n"
+                 r"$U_{macro} = a + bN^{2/3} + cN$")
+    anchored_text = AnchoredText(param_str, loc="lower left")
+    ax.add_artist(anchored_text)
+
 def FitUMacro(K_energy_min_file, K):
     pass
 
@@ -127,17 +146,6 @@ if __name__ == "__main__":
     pred = ax1.plot(N_vals, U_pred, label=r"Predicted $U_{macro}$")
 
     # Plot customization
-    def style_plot(ax, K, param_str):
-        """
-        Helper function to do common styling
-        """
-        ax.grid()
-        ax.set_xlabel(r"Number of Particles, $N$")
-        ax.set_title(f"K = {K}\n"
-                     r"$U_{macro} = a + bN^{2/3} + cN$")
-        anchored_text = AnchoredText(param_str, loc="lower left")
-        ax.add_artist(anchored_text)
-
     plots = act + pred
     labs = [p.get_label() for p in plots]
     param_str = f"a = {popt[0]:.2f}, b={popt[1]:.2f}, c={popt[2]:.2f}"
