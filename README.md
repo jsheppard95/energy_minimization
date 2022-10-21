@@ -79,7 +79,7 @@ Each of the following format:
 N: {}, Minimum P.E: {}, Average P.E: {}, Maximum P.E: {}
 ```
 
-where `N` ranges fropm `2` to `26` inclusive, and the minimum, average, and maximum
+where `N` ranges from `2` to `26` (inclusive), and the minimum, average, and maximum
 are over the `K` conjugate gradient searches for that `N`.
 
 Generate plots and global energy minimum model with the following analysis
@@ -137,4 +137,40 @@ initial positions on the Potential Energy Surface and increase the chance of
 finding a global energy minima as opposed to a local energy minima.
 
 ## Future Work
+This repository has been developed for simple extension to the `K = 1000` and
+`K = 10000` results upon completion, with functions defined so that the
+`__main__` body of `analysis.py` simply needs the addition:
 
+```
+# Set file paths
+K1000_fname = "K1000_energy_min.txt"
+K1000_file = os.path.join("data", K1000_fname)
+# Plot K1000 results
+PlotResults(K1000_file, 1000)
+FitUMacro(K1000_file, 1000)
+```
+
+with similar updates for the `K = 10000` case. However, it is clear that
+efficiency considerations are needed for a faster analysis. As a first step,
+it would be instructive to include `time.time()` calls around each function
+in `exercise2.py` (including Fortran functions) to determine any bottlenecks.
+One likely slow down is within the function `ConjugateGradient` prior to the
+`while` loop:
+
+```
+forces_i_1 = ex2lib.calcforces(Pos)
+dir_i_1 = np.copy(forces_i_1)
+_, PosMin_i_1 = LineSearch(Pos, forces_i_1, dx, EFracTolLS)
+EFracCG = 10
+while EFracCG > EFracTolCG:
+    # Conjugate Gradient Search
+```
+
+The calculation of `forces_i_1`, the previous step's forces, is not needed
+here. We can instead simply initialize `dir_i_1 = ex2lib.calcforces(Pos)`,
+perform the initial line search in this direction, and then begin the `while`
+loop for conjugate gradient. This may not however have a significant effect on
+run time given this calculation only occurs once per conjugate gradient search.
+Further, we are currently using `print()` statements to view progress which can
+cause slow downs. We could thus find minor speed improvement by instead
+writing progress statements to a `*.log` file that can be checked as needed.
