@@ -3,10 +3,6 @@ import matplotlib.pyplot as plt
 import os
 import pandas as pd
 
-#NOTE:
-#Everything below assumes unit atomic masses,
-#such that forces = accelerations.
-
 def ReadKEnergyMin(file):
     """
     Reads Conjugate Gradient output file and returns N values and minimum,
@@ -49,14 +45,10 @@ def ReadKEnergyMin(file):
     return result
 
 
-if __name__ == "__main__":
-    # Set file paths
-    K100_fname = "K100_energy_min.txt"
-    K100_file = os.path.join("data", K100_fname)
-    leary_fname = "LearyData.csv"
-    leary_file = os.path.join("data", leary_fname)
-    # Read K = 100 energy minimization results file
-    result = ReadKEnergyMin(K100_file)
+def PlotResults(K_energy_min_file, K):
+    # Read K energy minimization results file
+    result = ReadKEnergyMin(K_energy_min_file)
+
 
     # Plot minimum and average energies vs. N, for each value of K
     f, ax = plt.subplots()
@@ -65,8 +57,10 @@ if __name__ == "__main__":
     ax2 = ax.twinx()
     avg_PE = ax2.plot(result["N"], result["AverageP.E"], "x", color="blue",
                       label="Average")
-
-    # Read and plot the expected data from Leary
+    
+    # Plot expected data
+    leary_fname = "LearyData.csv"
+    leary_file = os.path.join("data", leary_fname)
     leary_df = pd.read_csv(leary_file)
     leary_PE = ax.plot(leary_df["N"], -leary_df["minusUmin"], "^", color="black",
                      label="Leary Data")
@@ -76,11 +70,44 @@ if __name__ == "__main__":
     labs = [p.get_label() for p in plots]
     ax.grid()
     ax.legend(plots, labs, loc=0)
-    ax.set_title("K = 100")
+    ax.set_title(f"K = {K}")
     ax.set_xlabel(r"Number of Particles, $N$")
     ax.set_ylabel(r"Minimum/Leary Potential Energy (dimensionless), $U^*_{min}$")
     ax2.set_ylabel(r"Average Potential Energy (dimensionless), $U^*_{avg}$")
     ax2.yaxis.label.set_color("blue")
     output_dir = "plots"
-    f.savefig(os.path.join(output_dir, "MinAvgPE_N_K100.png"))
+    outfile_name = os.path.basename(K_energy_min_file).replace(".txt", ".png")
+    f.savefig(os.path.join(output_dir, outfile_name))
+
+
+def UMacro(N, a, b, c):
+    """
+    Model for U_macro:
+    U_macro = a + bN^(2/3) + cN
+    Cluster Energy ~ Surface Area (Surface Tension) and Volume (bulk energy
+    density)
+    
+    Parameters:
+    -----------
+    N : int ; number of particles
+    a : float ; fit parameter
+    b : float ; fit parameter
+    c : float ; fit parameter
+
+    Returns:
+    --------
+    U_macro : float ; global energy minimum 
+    """
+    return a + b*N**(2/3) + c*N
+
+def FitUMacro():
+    pass
+
+
+if __name__ == "__main__":
+    # Set file paths
+    K100_fname = "K100_energy_min.txt"
+    K100_file = os.path.join("data", K100_fname)
+    PlotResults(K100_file, 100)
+
     plt.show()
